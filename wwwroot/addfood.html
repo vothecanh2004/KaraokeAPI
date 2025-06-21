@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Thêm món ăn</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
+    form { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    input, button { width: 100%; padding: 10px; margin: 10px 0; }
+    button { background-color: #00bfa5; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #009e88; }
+  </style>
+</head>
+<body>
+  <h2 style="text-align:center;">Thêm món ăn mới</h2>
+
+  <form id="addFoodForm" enctype="multipart/form-data">
+    <input type="text" id="name" placeholder="Tên món ăn" required />
+    <input type="number" id="price" placeholder="Giá" required />
+    <input type="file" id="image" accept="image/*" required />
+    <button type="submit">Thêm món</button>
+  </form>
+
+  <script>
+    document.getElementById("addFoodForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      // Upload ảnh trước
+      const imageInput = document.getElementById("image");
+      const formData = new FormData();
+      formData.append("image", imageInput.files[0]);
+
+      const uploadRes = await fetch("/api/rooms/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      if (!uploadRes.ok) {
+        alert("Lỗi khi upload ảnh!");
+        return;
+      }
+
+      const { imageUrl } = await uploadRes.json();
+
+      // Sau khi upload ảnh xong, gọi API thêm món ăn
+      const food = {
+        name: document.getElementById("name").value,
+        price: parseFloat(document.getElementById("price").value),
+        imageUrl: imageUrl
+      };
+
+      fetch("/api/foods", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(food)
+      })
+      .then(res => {
+        if (res.ok) {
+          alert("Đã thêm món ăn thành công!");
+          location.href = "orderfood.html";
+        } else {
+          alert("Lỗi khi thêm món ăn.");
+        }
+      });
+    });
+  </script>
+</body>
+</html>

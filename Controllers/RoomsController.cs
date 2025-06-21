@@ -38,6 +38,7 @@ namespace KaraokeAPI.Controllers
             _context.Rooms.Add(room);
             _context.SaveChanges();
             return Ok(room);
+            
         }
 
         // PUT: Update room
@@ -67,5 +68,27 @@ namespace KaraokeAPI.Controllers
             _context.SaveChanges();
             return Ok(new { message = "Đã xóa phòng thành công." });
         }
+        [HttpPost("upload")]
+public async Task<IActionResult> UploadImage(IFormFile image)
+{
+    if (image == null || image.Length == 0)
+        return BadRequest("No file uploaded");
+
+    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+    Directory.CreateDirectory(uploadsFolder);
+
+    var fileName = Guid.NewGuid() + Path.GetExtension(image.FileName);
+    var filePath = Path.Combine(uploadsFolder, fileName);
+
+    using (var stream = new FileStream(filePath, FileMode.Create))
+    {
+        await image.CopyToAsync(stream);
+    }
+
+    // Trả về đường dẫn ảnh
+    var imageUrl = "/uploads/" + fileName;
+    return Ok(new { imageUrl });
+}
+
     }
 }

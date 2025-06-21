@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Karaoke</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background-color: #000;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .hero {
+      background-image: url('https://cdn.bookingktv.com/uploads/2023/11/21042928/z4825243515382_e9c66f1dc22df4861f5f8e5e2f7396c6.jpg');
+      background-size: cover;
+      background-position: center;
+      height: 300px;
+      position: relative;
+    }
+
+    .hero-text {
+      position: absolute;
+      bottom: 20px;
+      left: 30px;
+      color: white;
+      font-size: 32px;
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 10px 20px;
+      border-radius: 8px;
+    }
+
+    .intro {
+      padding: 30px;
+      text-align: center;
+      background-color: white;
+    }
+
+    .intro h2 {
+      color: #333;
+    }
+
+    .room-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 30px;
+      background-color: white;
+    }
+
+    .room-card {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+
+    .room-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .room-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .room-info {
+      padding: 15px;
+    }
+
+    .room-info h3 {
+      margin: 0;
+      font-size: 18px;
+      color: #222;
+    }
+
+    .room-info p {
+      margin: 8px 0;
+      color: #555;
+    }
+
+    .btn-book {
+      margin-top: 10px;
+      padding: 10px;
+      width: 100%;
+      background: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .btn-book:hover {
+      background-color: #d81b60;
+    }
+    .slides {
+    display: flex;
+    width: 300%;
+    transition: transform 0.8s ease-in-out;
+  }
+  .slides img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+  }
+  </style>
+</head>
+<body>
+  <main>
+    <div id="header-placeholder"></div>
+
+    <div class="hero">
+      <div class="hero-text">Phòng hát hiện đại, giá rẻ, chất lượng cao</div>
+    </div>
+
+    <div class="intro">
+      <h2>Danh sách các phòng</h2>
+      <p>Chọn phòng yêu thích của bạn và đặt ngay để trải nghiệm âm nhạc tuyệt vời cùng bạn bè và gia đình.</p>
+    </div>
+
+    <div class="room-list" id="roomList"></div>
+  </main>
+
+  <!-- Footer hiển thị ở cuối -->
+  <div id="footer"></div>
+
+  <script>
+    fetch("header.html")
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById("header-placeholder").innerHTML = html;
+      });
+
+    fetch('/api/rooms')
+      .then(response => response.json())
+      .then(data => {
+        const roomList = document.getElementById('roomList');
+        data.forEach(room => {
+          const card = document.createElement('div');
+          card.className = 'room-card';
+          card.innerHTML = `
+            <img src="${room.imageUrl}" alt="Phòng karaoke">
+            <div class="room-info">
+              <h3>${room.name}</h3>
+              <p>Sức chứa: ${room.capacity} người</p>
+              <p>Giá: ${room.pricePerHour.toLocaleString()}đ/giờ</p>
+              <button class="btn-book" onclick="location.href='booking.html?roomId=${room.id}'">Đặt phòng</button>
+            </div>
+          `;
+          roomList.appendChild(card);
+        });
+      })
+      .catch(error => {
+        document.getElementById('roomList').innerHTML = '<p style="color:red">Không thể tải danh sách phòng!</p>';
+        console.error('Lỗi tải phòng:', error);
+      });
+
+    fetch('/footer.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById("footer").innerHTML = html;
+      })
+      .catch(err => console.error("Không thể tải footer:", err));
+  </script>
+</body>
+</html>

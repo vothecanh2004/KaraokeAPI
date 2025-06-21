@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Danh sách hóa đơn</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+      background-color: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #00bfa5;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .empty {
+      text-align: center;
+      color: #888;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div id="header-placeholder"></div>
+  <h1>Danh sách hóa đơn Karaoke</h1>
+  <div id="billContainer"></div>
+
+  <script>
+    fetch("header.html")
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById("header-placeholder").innerHTML = html;
+      });
+    fetch('/api/bills')
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('billContainer');
+
+        if (data.length === 0) {
+          container.innerHTML = '<p class="empty">Chưa có hóa đơn nào được tạo.</p>';
+          return;
+        }
+
+        const table = document.createElement('table');
+        table.innerHTML = `
+          <tr>
+            <th>Khách hàng</th>
+            <th>Phòng</th>
+            <th>Giờ đặt</th>
+            <th>Tổng tiền</th>
+          </tr>
+        `;
+
+        data.forEach(bill => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${bill.booking?.name || 'Không rõ'}</td>
+            <td>${bill.room?.name || 'Không rõ'}</td>
+            <td>${new Date(bill.booking?.bookingTime).toLocaleString('vi-VN')}</td>
+            <td>${bill.totalAmount.toLocaleString()} đ</td>
+          `;
+          table.appendChild(row);
+        });
+
+        container.appendChild(table);
+      })
+      .catch(err => {
+        document.getElementById('billContainer').innerHTML = '<p class="empty">Không thể tải danh sách hóa đơn.</p>';
+        console.error(err);
+      });
+  </script>
+</body>
+</html>

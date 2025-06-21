@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chỉnh sửa Phòng Karaoke</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f2f2f2;
+      padding: 20px;
+    }
+    form {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    h2 {
+      text-align: center;
+      color: #00bfa5;
+    }
+    input, label {
+      display: block;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+    input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      background: #00bfa5;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #009e88;
+    }
+  </style>
+</head>
+<body>
+  <form id="editRoomForm">
+    <h2>Chỉnh sửa Phòng</h2>
+    <label>Tên phòng</label>
+    <input type="text" id="name" required />
+    
+    <label>Sức chứa</label>
+    <input type="number" id="capacity" required />
+
+    <label>Giá mỗi giờ</label>
+    <input type="number" id="pricePerHour" required />
+
+    <label>Thay ảnh (nếu cần)</label>
+    <input type="file" id="image" accept="image/*" />
+
+    <button type="submit">Lưu thay đổi</button>
+  </form>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('id');
+
+    fetch('/api/rooms/' + roomId)
+      .then(res => res.json())
+      .then(room => {
+        document.getElementById('name').value = room.name;
+        document.getElementById('capacity').value = room.capacity;
+        document.getElementById('pricePerHour').value = room.pricePerHour;
+      });
+
+    document.getElementById('editRoomForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const fileInput = document.getElementById('image');
+      let imageUrl = '';
+
+      if (fileInput.files.length > 0) {
+        const formData = new FormData();
+        formData.append('image', fileInput.files[0]);
+        const uploadRes = await fetch('/api/rooms/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const uploadData = await uploadRes.json();
+        imageUrl = uploadData.imageUrl;
+      }
+
+      const updatedRoom = {
+        name: document.getElementById('name').value,
+        capacity: parseInt(document.getElementById('capacity').value),
+        pricePerHour: parseFloat(document.getElementById('pricePerHour').value),
+        imageUrl: imageUrl
+      };
+
+      await fetch('/api/rooms/' + roomId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedRoom)
+      });
+
+      alert('Đã cập nhật!');
+      location.href = 'bookingroom.html';
+    });
+  </script>
+</body>
+</html>

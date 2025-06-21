@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Đặt phòng Karaoke</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    form {
+      max-width: 500px;
+      margin: 30px auto;
+      padding: 25px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #00bfa5;
+      color: white;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #009e88;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 15px;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Đặt phòng Karaoke</h2>
+
+  <form id="bookingForm">
+    <input type="text" name="name" placeholder="Họ và tên" required />
+    <input type="text" name="phoneNumber" placeholder="Số điện thoại" required />
+    <input type="email" name="email" placeholder="Email" required />
+    <input type="datetime-local" name="bookingTime" required />
+    <input type="number" name="durationHours" placeholder="Số giờ thuê" required min="1" />
+    
+    <select name="roomId" id="roomSelect" required>
+      <option value="">-- Chọn phòng --</option>
+    </select>
+
+    <button type="submit">Đặt phòng</button>
+    <div class="message" id="message"></div>
+  </form>
+
+  <script>
+    // Lấy danh sách phòng từ API
+    fetch('/api/rooms')
+      .then(res => res.json())
+      .then(data => {
+        const select = document.getElementById('roomSelect');
+        data.forEach(room => {
+          const option = document.createElement('option');
+          option.value = room.id;
+          option.textContent = `${room.name} - ${room.capacity} người - ${room.pricePerHour.toLocaleString()}đ/h`;
+          select.appendChild(option);
+        });
+      });
+
+    // Gửi form đặt phòng
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const form = new FormData(this);
+      const data = Object.fromEntries(form.entries());
+      data.roomId = parseInt(data.roomId);
+      data.durationHours = parseInt(data.durationHours);
+
+      fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(res => res.ok ? res.json() : Promise.reject(res))
+      .then(result => {
+        document.getElementById('message').textContent = 'Đặt phòng thành công!';
+        this.reset();
+      })
+      .catch(err => {
+        document.getElementById('message').textContent = 'Lỗi khi đặt phòng!';
+        console.error(err);
+      });
+    });
+  </script>
+</body>
+</html>

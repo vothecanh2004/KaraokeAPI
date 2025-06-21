@@ -16,7 +16,7 @@ namespace KaraokeAPI.Data
         public DbSet<Promotion> Promotions { get; set; }
         public DbSet<Food> Foods { get; set; }
         public DbSet<FoodOrder> FoodOrders { get; set; }
-
+        public DbSet<Feedback> Feedbacks { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

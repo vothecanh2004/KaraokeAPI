@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chỉnh sửa Món ăn</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f2f2f2;
+      padding: 20px;
+    }
+    form {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    h2 {
+      text-align: center;
+      color: #00bfa5;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    img {
+      display: block;
+      margin: 15px auto;
+      max-width: 200px;
+      border-radius: 8px;
+    }
+    button {
+      background: #00bfa5;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+      margin-top: 20px;
+    }
+    button:hover {
+      background: #009e88;
+    }
+  </style>
+</head>
+<body>
+  <form id="editFoodForm">
+    <h2>Chỉnh sửa Món ăn</h2>
+
+    <label for="name">Tên món</label>
+    <input type="text" id="name" required />
+
+    <label for="price">Giá</label>
+    <input type="number" id="price" required />
+
+    <label>Ảnh hiện tại</label>
+    <img id="previewImage" src="" alt="Ảnh món ăn" />
+
+    <label for="image">Chọn ảnh mới (nếu muốn thay)</label>
+    <input type="file" id="image" accept="image/*" />
+
+    <button type="submit">Lưu thay đổi</button>
+  </form>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const foodId = urlParams.get("id");
+    let oldImageUrl = "";
+
+    // Load dữ liệu món ăn
+    fetch("/api/foods/" + foodId)
+      .then(res => res.json())
+      .then(food => {
+        document.getElementById("name").value = food.name;
+        document.getElementById("price").value = food.price;
+
+        const fullImageUrl = food.imageUrl.startsWith("http")
+          ? food.imageUrl
+          : location.origin + "/" + food.imageUrl.replace(/^\/?/, '');
+
+        document.getElementById("previewImage").src = fullImageUrl;
+        oldImageUrl = food.imageUrl;
+      });
+
+    document.getElementById("editFoodForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value;
+      const price = parseFloat(document.getElementById("price").value);
+      const fileInput = document.getElementById("image");
+      let imageUrl = oldImageUrl;
+
+      // Nếu có ảnh mới thì upload
+      if (fileInput.files.length > 0) {
+        const formData = new FormData();
+        formData.append("image", fileInput.files[0]);
+        const uploadRes = await fetch("/api/rooms/upload", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!uploadRes.ok) {
+          alert("Lỗi khi upload ảnh!");
+          return;
+        }
+
+        const uploadData = await uploadRes.json();
+        imageUrl = uploadData.imageUrl;
+      }
+
+      const updatedFood = { name, price, imageUrl };
+
+      fetch("/api/foods/" + foodId, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedFood)
+      })
+      .then(res => {
+        if (res.ok) {
+          alert("Cập nhật thành công!");
+          location.href = "orderfood.html";
+        } else {
+          alert("Lỗi khi cập nhật món ăn.");
+        }
+      });
+    });
+  </script>
+</body>
+</html>

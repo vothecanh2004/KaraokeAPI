@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Đánh giá phòng Karaoke</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      padding: 30px;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    form {
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    input, textarea, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      background-color: #00bfa5;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #009e88;
+    }
+
+    .feedback-list {
+      margin-top: 40px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .feedback-item {
+      background: white;
+      border-left: 4px solid #00bfa5;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .feedback-item h4 {
+      margin: 0 0 5px;
+      color: #222;
+    }
+
+    .feedback-item p {
+      margin: 0;
+      color: #555;
+    }
+
+    .stars {
+      color: gold;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="header-placeholder"></div>
+  <h1>Gửi đánh giá phòng Karaoke</h1>
+
+  <form id="feedbackForm">
+    <input type="text" id="name" placeholder="Tên của bạn" required />
+    <textarea id="content" placeholder="Nội dung đánh giá" rows="4" required></textarea>
+
+    <select id="roomId" required>
+      <option value="">Chọn phòng</option>
+    </select>
+
+    <select id="rating" required>
+      <option value="">Chọn số sao</option>
+      <option value="1">1 sao</option>
+      <option value="2">2 sao</option>
+      <option value="3">3 sao</option>
+      <option value="4">4 sao</option>
+      <option value="5">5 sao</option>
+    </select>
+
+    <button type="submit">Gửi đánh giá</button>
+  </form>
+
+  <h2>Đánh giá gần đây</h2>
+  <div class="feedback-list" id="feedbackList"></div>
+
+  <script>
+    // Tải header nếu có
+    fetch("header.html")
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById("header-placeholder").innerHTML = html;
+      });
+
+    const form = document.getElementById('feedbackForm');
+    const feedbackList = document.getElementById('feedbackList');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const comment = document.getElementById('content').value.trim();
+      const rating = parseInt(document.getElementById('rating').value);
+      const roomId = parseInt(document.getElementById('roomId').value);
+
+      if (!name || !comment || !rating || !roomId) return;
+
+      fetch('/api/feedbacks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, comment, rating, roomId })
+      })
+      .then(res => res.ok ? res.json() : Promise.reject(res))
+      .then(() => {
+        alert("Cảm ơn bạn đã đánh giá!");
+        form.reset();
+        loadFeedbacks();
+      })
+      .catch(err => {
+        alert("Không thể gửi đánh giá.");
+        console.error(err);
+      });
+    });
+
+    function loadFeedbacks() {
+      fetch('/api/feedbacks')
+        .then(res => res.json())
+        .then(data => {
+          feedbackList.innerHTML = '';
+          data.reverse().forEach(fb => {
+            const item = document.createElement('div');
+            item.className = 'feedback-item';
+            item.innerHTML = `
+              <h4>${fb.name}</h4>
+              <div class="stars">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</div>
+              <p>${fb.comment}</p>
+              <p><strong>Phòng:</strong> ${fb.room?.name || fb.roomId}</p>
+            `;
+            feedbackList.appendChild(item);
+          });
+        });
+    }
+
+    function loadRooms() {
+      fetch('/api/rooms')
+        .then(res => res.json())
+        .then(data => {
+          const roomSelect = document.getElementById('roomId');
+          data.forEach(room => {
+            const option = document.createElement('option');
+            option.value = room.id;
+            option.textContent = `Phòng ${room.name || room.id}`;
+            roomSelect.appendChild(option);
+          });
+        })
+        .catch(err => console.error('Không thể tải danh sách phòng:', err));
+    }
+
+    // Load khi mở trang
+    loadRooms();
+    loadFeedbacks();
+  </script>
+
+</body>
+</html>
