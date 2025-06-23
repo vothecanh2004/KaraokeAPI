@@ -110,10 +110,14 @@
         return res.json();
       })
       .then(data => {
-        // ✅ Lưu tên đăng nhập vào localStorage
-        localStorage.setItem("username", data.username); // hoặc data.name tùy API trả về
+        console.log("Dữ liệu từ API:", data);
+        const username = data.username || (data.user && data.user.username);
+        if (!username) throw new Error("Không lấy được tên người dùng");
+
+        localStorage.setItem("username", username);
+
         alert("Đăng nhập thành công!");
-        window.location.href = "/home.html";
+        window.location.href = "/home.html"; 
       })
       .catch(err => {
         errorMsg.textContent = err.message;
@@ -122,3 +126,4 @@
   </script>
 </body>
 </html>
+

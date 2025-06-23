@@ -18,9 +18,28 @@ namespace KaraokeAPI.Controllers
         [HttpPost]
         public IActionResult CreateBooking([FromBody] Booking booking)
         {
+            // Thêm booking vào database
             _context.Bookings.Add(booking);
+            _context.SaveChanges(); // Lúc này booking.Id đã có
+
+            // Tạo hóa đơn tương ứng
+            var bill = new Bill
+            {
+                BookingId = booking.Id,
+                RoomId = booking.RoomId, // lấy từ booking
+                TotalAmount = 0,
+                CreatedAt = DateTime.Now,
+                Status = "Chưa thanh toán"
+            };
+
+            _context.Bills.Add(bill);
             _context.SaveChanges();
-            return Ok(booking);
+
+            return Ok(new
+            {
+                Booking = booking,
+                Bill = bill
+            });
         }
 
         [HttpGet]
@@ -29,50 +48,54 @@ namespace KaraokeAPI.Controllers
             var bookings = _context.Bookings.ToList();
             return Ok(bookings);
         }
+
         [HttpGet("{id}")]
         public IActionResult GetBookingById(int id)
         {
             var booking = _context.Bookings.FirstOrDefault(b => b.Id == id);
             if (booking == null)
-    {
-        return NotFound(new { message = "Không tìm thấy đặt phòng với ID này." });
-    }
-    return Ok(booking);
-}
+            {
+                return NotFound(new { message = "Không tìm thấy đặt phòng với ID này." });
+            }
+            return Ok(booking);
+        }
+
         [HttpDelete("{id}")]
-public IActionResult DeleteBooking(int id)
-{
-    var booking = _context.Bookings.FirstOrDefault(b => b.Id == id);
-    if (booking == null)
-    {
-        return NotFound(new { message = "Không tìm thấy đặt phòng với ID này." });
-    }
+        public IActionResult DeleteBooking(int id)
+        {
+            var booking = _context.Bookings.FirstOrDefault(b => b.Id == id);
+            if (booking == null)
+            {
+                return NotFound(new { message = "Không tìm thấy đặt phòng với ID này." });
+            }
 
-    _context.Bookings.Remove(booking);
-    _context.SaveChanges();
+            _context.Bookings.Remove(booking);
+            _context.SaveChanges();
 
-    return Ok(new { message = "Đã hủy đặt phòng thành công." });
-}
-    [HttpPut("{id}")]
-public IActionResult UpdateBooking(int id, [FromBody] Booking updatedBooking)
-{
-    var booking = _context.Bookings.FirstOrDefault(b => b.Id == id);
-    if (booking == null)
-    {
-        return NotFound(new { message = "Không tìm thấy đặt phòng với ID này." });
-    }
+            return Ok(new { message = "Đã hủy đặt phòng thành công." });
+        }
 
-    // Cập nhật thông tin
-    booking.Name = updatedBooking.Name;
-    booking.PhoneNumber = updatedBooking.PhoneNumber;
-    booking.Email = updatedBooking.Email;
-    booking.BookingTime = updatedBooking.BookingTime;
-    booking.DurationHours = updatedBooking.DurationHours;
+        [HttpPut("{id}")]
+        public IActionResult UpdateBooking(int id, [FromBody] Booking updatedBooking)
+        {
+            var booking = _context.Bookings.FirstOrDefault(b => b.Id == id);
+            if (booking == null)
+            {
+                return NotFound(new { message = "Không tìm thấy đặt phòng với ID này." });
+            }
 
-    _context.SaveChanges();
+            booking.Name = updatedBooking.Name;
+            booking.PhoneNumber = updatedBooking.PhoneNumber;
+            booking.Email = updatedBooking.Email;
+            booking.BookingTime = updatedBooking.BookingTime;
+            booking.DurationHours = updatedBooking.DurationHours;
+            booking.RoomId = updatedBooking.RoomId;
 
-    return Ok(new { message = "Cập nhật đặt phòng thành công.", data = booking });
-}
+            _context.SaveChanges();
+
+            return Ok(new { message = "Cập nhật đặt phòng thành công.", data = booking });
+        }
+
         [HttpGet("search")]
         public IActionResult SearchBookings([FromQuery] string name, [FromQuery] string phoneNumber)
         {
@@ -91,6 +114,5 @@ public IActionResult UpdateBooking(int id, [FromBody] Booking updatedBooking)
             var bookings = query.ToList();
             return Ok(bookings);
         }
-
     }
 }

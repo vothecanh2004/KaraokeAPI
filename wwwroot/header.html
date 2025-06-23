@@ -8,38 +8,11 @@
     <a href="feedback.html" style="margin-right: 20px; color: white; text-decoration: none;">Đánh giá</a>
     <a href="managefoods.html" style="margin-right: 20px; color: white; text-decoration: none;">Quản lý món</a>
     
-    <a id="loginLogoutLink" href="/login.html" style="color: white; text-decoration: none;">Login</a>
+    <a id="loginLogoutLink" href="login.html" style="color: white; text-decoration: none;">Login</a>
     
   </nav>
 </header>
 
-<header style="background: #00bfa5; padding: 15px 30px; color: white; display: flex; align-items: center; justify-content: space-between;">
-  <h2 style="margin: 0;">🎤 Karaoke</h2>
-  <nav>
-    <a href="/pages/home.html" style="margin-right: 20px; color: white; text-decoration: none;">Trang chủ</a>
-    <a href="/pages/bookingroom.html" style="margin-right: 20px; color: white; text-decoration: none;">Đặt phòng</a>
-    <a href="/pages/orderfood.html" style="margin-right: 20px; color: white; text-decoration: none;">Gọi món</a>
-    <a href="/pages/bills.html" style="margin-right: 20px; color: white; text-decoration: none;">Hóa đơn</a>
-    <a href="/pages/feedback.html" style="margin-right: 20px; color: white; text-decoration: none;">Đánh giá</a>
-    <a href="/pages/managefoods.html" style="margin-right: 20px; color: white; text-decoration: none;">Quản lý món</a>
-    <a id="loginLogoutLink" href="/pages/login.html" style="color: white; text-decoration: none;">Login</a>
-  </nav>
-</header>
 
-<script>
-  const loginLogoutLink = document.getElementById("loginLogoutLink");
-  const username = localStorage.getItem("username");
 
-  if (username) {
-    loginLogoutLink.textContent = "Logout";
-    loginLogoutLink.href = "#";
-    loginLogoutLink.addEventListener("click", function(e) {
-      e.preventDefault();
-      if (confirm("Bạn có chắc chắn muốn đăng xuất?")) {
-        localStorage.removeItem("username");
-        window.location.href = "/pages/login.html";
-      }
-    });
-  }
-</script>
 

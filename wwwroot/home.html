@@ -146,43 +146,64 @@
   <!-- Footer hiển thị ở cuối -->
   <div id="footer"></div>
 
-  <script>
-    fetch("header.html")
-      .then(res => res.text())
-      .then(html => {
-        document.getElementById("header-placeholder").innerHTML = html;
-      });
+  ...
+<script>
+ fetch("/header.html")
+  .then(res => res.text())
+  .then(html => {
+    document.getElementById("header-placeholder").innerHTML = html;
 
-    fetch('/api/rooms')
-      .then(response => response.json())
-      .then(data => {
-        const roomList = document.getElementById('roomList');
-        data.forEach(room => {
-          const card = document.createElement('div');
-          card.className = 'room-card';
-          card.innerHTML = `
-            <img src="${room.imageUrl}" alt="Phòng karaoke">
-            <div class="room-info">
-              <h3>${room.name}</h3>
-              <p>Sức chứa: ${room.capacity} người</p>
-              <p>Giá: ${room.pricePerHour.toLocaleString()}đ/giờ</p>
-              <button class="btn-book" onclick="location.href='booking.html?roomId=${room.id}'">Đặt phòng</button>
-            </div>
-          `;
-          roomList.appendChild(card);
-        });
-      })
-      .catch(error => {
-        document.getElementById('roomList').innerHTML = '<p style="color:red">Không thể tải danh sách phòng!</p>';
-        console.error('Lỗi tải phòng:', error);
-      });
+    const loginLogoutLink = document.getElementById("loginLogoutLink");
+    const username = localStorage.getItem("username");
 
-    fetch('/footer.html')
-      .then(res => res.text())
-      .then(html => {
-        document.getElementById("footer").innerHTML = html;
-      })
-      .catch(err => console.error("Không thể tải footer:", err));
-  </script>
+    if (username && loginLogoutLink) {
+      loginLogoutLink.textContent = "Hi " + username;  // ✅ Đổi thành "Hi ..."
+      loginLogoutLink.href = "#";
+      loginLogoutLink.style.cursor = "pointer";
+      loginLogoutLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        if (confirm("Bạn có chắc chắn muốn đăng xuất?")) {
+          localStorage.removeItem("username");
+          window.location.href = "/login.html";
+        }
+      });
+    }
+  });
+
+
+
+  fetch('/api/rooms')
+    .then(response => response.json())
+    .then(data => {
+      const roomList = document.getElementById('roomList');
+      data.forEach(room => {
+        const card = document.createElement('div');
+        card.className = 'room-card';
+        card.innerHTML = `
+          <img src="${room.imageUrl}" alt="Phòng karaoke">
+          <div class="room-info">
+            <h3>${room.name}</h3>
+            <p>Sức chứa: ${room.capacity} người</p>
+            <p>Giá: ${room.pricePerHour.toLocaleString()}đ/giờ</p>
+            <button class="btn-book" onclick="location.href='booking.html?roomId=${room.id}'">Đặt phòng</button>
+          </div>
+        `;
+        roomList.appendChild(card);
+      });
+    })
+    .catch(error => {
+      document.getElementById('roomList').innerHTML = '<p style="color:red">Không thể tải danh sách phòng!</p>';
+      console.error('Lỗi tải phòng:', error);
+    });
+
+  fetch('/footer.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("footer").innerHTML = html;
+    })
+    .catch(err => console.error("Không thể tải footer:", err));
+
+</script>
+
 </body>
 </html>

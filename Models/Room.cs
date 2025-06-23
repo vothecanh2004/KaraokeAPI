@@ -7,5 +7,6 @@ namespace KaraokeAPI.Models
         public int Capacity { get; set; }
         public decimal PricePerHour { get; set; }
         public string? ImageUrl { get; set; }
+        public ICollection<Booking> Bookings { get; set; } 
     }
 }

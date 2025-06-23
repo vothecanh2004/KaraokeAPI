@@ -8,5 +8,7 @@ namespace KaraokeAPI.Models
         public string Email { get; set; } = "";
         public DateTime BookingTime { get; set; }
         public int DurationHours { get; set; }
+        public int RoomId { get; set; } // để tạo hóa đơn đúng
+        public Room? Room { get; set; }
     }
 }
